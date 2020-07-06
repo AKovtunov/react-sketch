@@ -180,6 +180,7 @@ class SketchField extends PureComponent {
    * Action when an object is added to the canvas
    */
   _onObjectAdded = (e) => {
+    console.log("Hey, I am in sketch field")
     const {onObjectAdded} = this.props;
     if (!this.state.action) {
       this.setState({ action: true });
@@ -808,7 +809,8 @@ class SketchField extends PureComponent {
       width,
       height
     } = this.props;
-
+    console.log("Hey, I am in sketch field")
+    
     let canvasDivStyle = Object.assign({}, style ? style : {},
       width ? { width: width } : {},
       height ? { height: height } : { height: 512 });
