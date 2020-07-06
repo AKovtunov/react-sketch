@@ -80,6 +80,11 @@ class SketchField extends PureComponent {
     className: PropTypes.string,
     // Style options to pass to container div of canvas
     style: PropTypes.object,
+
+    // Added
+    onUpdate: PropTypes.func, // function to execute when an object is modified
+    username: PropTypes.string, // username of the current user
+    shortid: PropTypes.func // helper for generating random unique IDs for objects
   };
 
   static defaultProps = {
@@ -188,6 +193,13 @@ class SketchField extends PureComponent {
     let state = JSON.stringify(objState);
     // object, previous state, current state
     this._history.keep([obj, state, state])
+    // added:
+    if (!obj.sender) {
+      const id = this.props.shortid.generate();
+      Object.assign(obj, { id });
+      this.props.onUpdate(JSON.stringify(obj), 'add', this.props.username, id);
+    }
+
     onObjectAdded(e);
   };
 
@@ -225,6 +237,13 @@ class SketchField extends PureComponent {
     obj.__originalState = objState;
     let currState = JSON.stringify(objState);
     this._history.keep([obj, prevState, currState]);
+
+    // added
+    if (!obj.sender) {
+      let strObj = JSON.stringify(obj);
+      this.props.onUpdate(strObj, 'update', this.props.username, obj.id);
+    }
+
     onObjectModified(e);
   };
 
@@ -514,6 +533,77 @@ class SketchField extends PureComponent {
     return discarded
   };
 
+
+
+    /**
+    Add object to the canvas
+
+    */
+
+  addObject = (obj) => {
+
+    let canvas = this._fc;
+    let shapeData = JSON.parse(obj);
+
+    let shape = null;
+    const type = this._capsFirstLetter(shapeData.type);
+    if (type == 'Path') {
+      let string_path = '';
+      shapeData.path.forEach((x) => {
+        string_path += x.join(' ');
+      });
+
+      shape = new fabric.Path(string_path);
+      delete shapeData.path;
+      shape.set(shapeData);
+    } else if (type == 'I-text') {
+      shape = new fabric.Text(shapeData.text);
+      delete shapeData.text;
+      shape.set(shapeData);
+    } else {
+      // for Rectangle and Circle objects
+      shape = new fabric[type](shapeData);
+    }
+
+    canvas.add(shape);
+  }
+
+  _capsFirstLetter = (str) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  modifyObject = (obj) => {
+    let objData = JSON.parse(obj);
+    let canvas = this._fc;
+
+    var objToModify = canvas.getObjects().find((o) => {
+      return objData.id == o.id;
+    });
+    objToModify.set(objData); // update the object
+    objToModify.setCoords(); // useful if the object's coordinates in the canvas also changed (usually by moving)
+    canvas.requestRenderAll(); // refresh the canvas so changes will appear
+  }
+
+  /**
+  Added to get or set selected
+
+  */
+
+  getSelected = () => {
+    let canvas = this._fc;
+    let activeObj = canvas.getActiveObject();
+    return activeObj;
+  }
+
+  setSelected = (id) => {
+    let canvas = this._fc;
+    var objToSelect = canvas.getObjects().find((o) => {
+      return id == o.id;
+    });
+    canvas.setActiveObject(objToSelect);
+    canvas.requestRenderAll();
+  }
+
   /**
    * Remove selected object from the canvas
    */
@@ -613,6 +703,7 @@ class SketchField extends PureComponent {
     };
     Object.assign(options, opts);
     iText.set({
+      'id': options.id,
       'left': options.left,
       'top': options.top
     });
