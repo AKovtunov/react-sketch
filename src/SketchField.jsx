@@ -576,12 +576,18 @@ class SketchField extends PureComponent {
   modifyObject = (obj) => {
     let objData = JSON.parse(obj);
     let canvas = this._fc;
-
+    console.log("ObjectData:")
+    console.log(obj)
+    console.log("Get Objects:")
+    console.log(canvas.getObjects())
     var objToModify = canvas.getObjects().find((o) => {
       return objData.id == o.id;
     });
-    objToModify.set(objData); // update the object
-    objToModify.setCoords(); // useful if the object's coordinates in the canvas also changed (usually by moving)
+    if (objToModify){
+      objToModify.set(objData); // update the object
+      objToModify.setCoords(); // useful if the object's coordinates in the canvas also changed (usually by moving)
+    }
+
     canvas.requestRenderAll(); // refresh the canvas so changes will appear
   }
 
@@ -810,7 +816,7 @@ class SketchField extends PureComponent {
       height
     } = this.props;
     console.log("Hey, I am in sketch field")
-    
+
     let canvasDivStyle = Object.assign({}, style ? style : {},
       width ? { width: width } : {},
       height ? { height: height } : { height: 512 });
