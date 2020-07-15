@@ -180,7 +180,7 @@ class SketchField extends PureComponent {
    * Action when an object is added to the canvas
    */
   _onObjectAdded = (e) => {
-    console.log("Hey, I am in sketch field")
+    console.log(`object added with props ${e}`)
     const {onObjectAdded} = this.props;
     if (!this.state.action) {
       this.setState({ action: true });
