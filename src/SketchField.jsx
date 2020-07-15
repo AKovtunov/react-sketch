@@ -181,6 +181,7 @@ class SketchField extends PureComponent {
    */
   _onObjectAdded = (e) => {
     console.log(`object added with props ${e}`)
+    console.log(e)
     const {onObjectAdded} = this.props;
     if (!this.state.action) {
       this.setState({ action: true });
@@ -196,9 +197,12 @@ class SketchField extends PureComponent {
     this._history.keep([obj, state, state])
     // added:
     if (!obj.sender) {
-      const id = this.props.shortid.generate();
-      Object.assign(obj, { id });
-      this.props.onUpdate(JSON.stringify(obj), 'add', this.props.username, id);
+      let id;
+      if (this.props.shortid){
+        id = this.props.shortid.generate()
+        Object.assign(obj, { id });
+        this.props.onUpdate(JSON.stringify(obj), 'add', this.props.username, id);
+      } 
     }
 
     onObjectAdded(e);
