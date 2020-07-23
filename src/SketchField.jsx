@@ -180,8 +180,6 @@ class SketchField extends PureComponent {
    * Action when an object is added to the canvas
    */
   _onObjectAdded = (e) => {
-    console.log(`object added with props ${e}`)
-    console.log(e)
     const {onObjectAdded} = this.props;
     if (!this.state.action) {
       this.setState({ action: true });
@@ -195,15 +193,24 @@ class SketchField extends PureComponent {
     let state = JSON.stringify(objState);
     // object, previous state, current state
     this._history.keep([obj, state, state])
+
     // added:
     if (!obj.sender) {
       let id;
       if (this.props.shortid){
         id = this.props.shortid.generate()
         Object.assign(obj, { id });
-        this.props.onUpdate(JSON.stringify(obj), 'add', this.props.username, id);
-      } 
+        if (this.props.tool == Tool.Pencil || obj.__originalState.type == "i-text"){ // if not - onMouseUp
+          this.props.onUpdate(JSON.stringify(obj), 'add', this.props.username, id);
+        }
+      }
     }
+
+    obj.set({
+      sender: null
+    });
+
+    obj.__originalState = obj.toJSON();
 
     onObjectAdded(e);
   };
@@ -242,12 +249,17 @@ class SketchField extends PureComponent {
     obj.__originalState = objState;
     let currState = JSON.stringify(objState);
     this._history.keep([obj, prevState, currState]);
-
     // added
     if (!obj.sender) {
       let strObj = JSON.stringify(obj);
       this.props.onUpdate(strObj, 'update', this.props.username, obj.id);
     }
+
+    obj.set({
+      sender: null
+    });
+
+    obj.__originalState = obj.toJSON();
 
     onObjectModified(e);
   };
@@ -311,6 +323,24 @@ class SketchField extends PureComponent {
       const newObj = objects[objects.length - 1];
       if (newObj && newObj.__version === 1) {
         newObj.__originalState = newObj.toJSON();
+          // added:
+          if (!newObj.sender) {
+            let id;
+            if (this.props.shortid){
+              id = this.props.shortid.generate()
+              // Object.assign(newObj.__originalState, { id });
+              // Object.assign(newObj, { id });
+              this.props.onUpdate(JSON.stringify(newObj.__originalState), 'add', this.props.username, newObj.id);
+            }
+          }
+
+
+
+          newObj.set({
+            sender: null
+          });
+
+          newObj.__originalState = newObj.toJSON();
       }
     }
     if (this.props.onChange) {
@@ -319,6 +349,7 @@ class SketchField extends PureComponent {
         onChange(e.e)
       }, 10)
     }
+
     onMouseUp(e);
   };
 
@@ -565,6 +596,9 @@ class SketchField extends PureComponent {
       shape = new fabric.Text(shapeData.text);
       delete shapeData.text;
       shape.set(shapeData);
+    } else if (type == 'Line') {
+      shape = new fabric[type]([shapeData.x1, shapeData.y1, shapeData.x2, shapeData.y2])
+      Object.assign(shape, shapeData)
     } else {
       // for Rectangle and Circle objects
       shape = new fabric[type](shapeData);
@@ -580,13 +614,12 @@ class SketchField extends PureComponent {
   modifyObject = (obj) => {
     let objData = JSON.parse(obj);
     let canvas = this._fc;
-    console.log("ObjectData:")
-    console.log(obj)
-    console.log("Get Objects:")
-    console.log(canvas.getObjects())
     var objToModify = canvas.getObjects().find((o) => {
       return objData.id == o.id;
     });
+
+    objData.sender = null;
+
     if (objToModify){
       objToModify.set(objData); // update the object
       objToModify.setCoords(); // useful if the object's coordinates in the canvas also changed (usually by moving)
@@ -770,10 +803,10 @@ class SketchField extends PureComponent {
     canvas.on('object:scaling', e => this.callEvent(e, this._onObjectScaling));
     canvas.on('object:rotating', e => this.callEvent(e, this._onObjectRotating));
     // IText Events fired on Adding Text
-    // canvas.on("text:event:changed", console.log)
-    // canvas.on("text:selection:changed", console.log)
-    // canvas.on("text:editing:entered", console.log)
-    // canvas.on("text:editing:exited", console.log)
+    // canvas.on("text:event:change
+    // canvas.on("text:selection:change
+    // canvas.on("text:editing:entere
+    // canvas.on("text:editing:exite
 
     this.disableTouchScroll();
 
@@ -819,7 +852,6 @@ class SketchField extends PureComponent {
       width,
       height
     } = this.props;
-    console.log("Hey, I am in sketch field")
 
     let canvasDivStyle = Object.assign({}, style ? style : {},
       width ? { width: width } : {},
