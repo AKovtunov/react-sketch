@@ -329,8 +329,6 @@ class SketchField extends PureComponent {
           if (this.props.shortid){
             id = this.props.shortid.generate()
             Object.assign(newObj, { id });
-            // Object.assign(newObj.__originalState, { id });
-            // Object.assign(newObj, { id });
             this.props.onUpdate(JSON.stringify(newObj), 'add', this.props.username, newObj.id);
           }
         }
@@ -571,7 +569,7 @@ class SketchField extends PureComponent {
 
 
     /**
-    Add object to the canvas
+    Add object to the canvas that was received as JSON
 
     */
 
@@ -600,7 +598,6 @@ class SketchField extends PureComponent {
       Object.assign(shape, shapeData)
     } else if (type == 'Image'){
       let canvas = this._fc;
-
       fabric.Image.fromURL(shapeData.src, (shape) => {
         shape.scale(0.5);
         shape.set({
@@ -631,7 +628,6 @@ class SketchField extends PureComponent {
       return objData.id == o.id;
     });
 
-    // obj.__version += 1; !!!!!!!!!!!! <________-------------------
     objData.sender = null;
 
     if (objToModify){
