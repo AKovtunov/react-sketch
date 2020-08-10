@@ -198,8 +198,6 @@ class SketchField extends PureComponent {
     if (!obj.sender) {
       let id;
       if (this.props.shortid){
-        console.log("Object Added")
-        console.log(e)
         if (this.props.tool == Tool.Pencil || obj.__originalState.type == "i-text"){ // if not - onMouseUp
           id = this.props.shortid.generate()
           Object.assign(obj, { id });
@@ -244,17 +242,13 @@ class SketchField extends PureComponent {
   _onObjectModified = (e) => {
     const {onObjectModified} = this.props;
     let obj = e.target;
-    console.log("Object modified")
-    console.log(obj)
     obj.__version += 1;
     let prevState = JSON.stringify(obj.__originalState);
-    console.log(prevState)
     let objState = obj.toJSON();
     // record current object state as json and update to originalState
     obj.__originalState = objState;
     let currState = JSON.stringify(objState);
     this._history.keep([obj, prevState, currState]);
-    console.log(obj)
     // added
     if (!obj.sender) {
       let strObj = JSON.stringify(obj);
@@ -606,7 +600,7 @@ class SketchField extends PureComponent {
       Object.assign(shape, shapeData)
     } else if (type == 'Image'){
       let canvas = this._fc;
-      
+
       fabric.Image.fromURL(shapeData.src, (shape) => {
         shape.scale(0.5);
         shape.set({
@@ -633,10 +627,6 @@ class SketchField extends PureComponent {
   modifyObject = (obj) => {
     let objData = JSON.parse(obj);
     let canvas = this._fc;
-    console.log("ObjectData:")
-    console.log(obj)
-    console.log("Get Objects:")
-    console.log(canvas.getObjects())
     var objToModify = canvas.getObjects().find((o) => {
       return objData.id == o.id;
     });
