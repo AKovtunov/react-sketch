@@ -604,12 +604,9 @@ class SketchField extends PureComponent {
     } else if (type == 'Line') {
       shape = new fabric[type]([shapeData.x1, shapeData.y1, shapeData.x2, shapeData.y2])
       Object.assign(shape, shapeData)
-    } else if (true){
+    } else if (type == 'Image'){
       let canvas = this._fc;
-      console.log(fabric)
-      console.log(fabric.Image)
-      console.log(shapeData.src)
-
+      
       fabric.Image.fromURL(shapeData.src, (shape) => {
         shape.scale(0.5);
         shape.set({
